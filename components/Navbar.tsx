@@ -1,7 +1,16 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
+  const pathname = usePathname();
+
+  if (pathname.startsWith('/dashboard')) {
+    return null;
+  }
+
   return (
     <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-5xl backdrop-blur-xl bg-black/40 border border-white/10 rounded-full shadow-2xl transition-all duration-300">
       <div className="px-6 h-16 flex items-center justify-between">

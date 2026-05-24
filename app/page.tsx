@@ -8,7 +8,7 @@ export default function Home() {
       <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
-            src="/img/bg.webp"
+            src="/img/cek.webp"
             alt="Background sarung"
             fill
             className="object-cover scale-105"
@@ -92,19 +92,13 @@ export default function Home() {
                   <div className="p-2 md:p-3 rounded-[2rem] bg-white/5 border border-white/10 shadow-[0_0_50px_-12px_rgba(251,191,36,0.15)] backdrop-blur-xl">
                     {/* Inner Mockup Container */}
                     <div className="relative rounded-[1.5rem] overflow-hidden bg-[#0f0f13] aspect-[4/3] w-full shadow-inner border border-white/5">
-                      {/* Top Bar Aksesoris */}
-                      <div className="absolute top-0 w-full h-1.5 bg-gradient-to-r from-amber-400 to-orange-600 z-20"></div>
-
                       {/* Mockup Image */}
                       <Image
-                        src="/img/mockup-shopee.png"
+                        src="/img/mockup.webp"
                         alt="Mockup Toko Shopee"
                         fill
                         className="object-cover transition-transform duration-700 hover:scale-105 opacity-90 hover:opacity-100"
                       />
-
-                      {/* Soft Overlay Bawah agar menyatu */}
-                      <div className="absolute bottom-0 w-full h-1/4 bg-gradient-to-t from-[#0f0f13] to-transparent z-10 pointer-events-none"></div>
                     </div>
                   </div>
                 </div>
