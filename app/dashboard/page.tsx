@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -148,7 +149,7 @@ function DashboardContent() {
          .slice(0, 5);
 
       if (top5.length > 0) {
-         setTopProductsData({ top5, productMonthlyData });
+         setTopProductsData({ top5, productMonthlyData, productTotals });
       } else {
          setTopProductsData(null);
       }
@@ -260,28 +261,31 @@ function DashboardContent() {
         label: productName,
         data: data,
         backgroundColor: topProductsChartColors[index],
-        borderRadius: 6,
-        barThickness: 16,
+        borderRadius: { topLeft: 100, topRight: 100, bottomLeft: 0, bottomRight: 0 },
+        borderSkipped: 'bottom',
+        barPercentage: 1.0,
+        categoryPercentage: 0.65,
       };
     }) : [],
   };
 
-  const barChartOptions = {
+  const barChartOptions: any = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false, // hide legend so it doesn't clutter, since name is shown on hover tooltip
+        display: false,
       },
       tooltip: {
-        backgroundColor: '#1f2937',
-        padding: 12,
-        titleFont: { size: 13 },
-        bodyFont: { size: 12 },
+        backgroundColor: 'rgba(17, 24, 39, 0.95)',
+        padding: 16,
+        titleFont: { size: 14, family: "'Inter', sans-serif", weight: 'bold' },
+        bodyFont: { size: 13, family: "'Inter', sans-serif" },
         displayColors: true,
+        usePointStyle: true,
         callbacks: {
           label: function(context: any) {
-            return `${context.dataset.label}: Rp ${context.raw} Jt`;
+            return ` ${context.dataset.label}: Rp ${context.raw} Jt`;
           }
         }
       },
@@ -291,16 +295,28 @@ function DashboardContent() {
         beginAtZero: true,
         grid: {
           color: '#f3f4f6',
-          drawBorder: false,
+          tickLength: 0,
         },
-        border: { display: false }
+        border: { display: false },
+        ticks: { 
+          padding: 10, 
+          color: '#6b7280',
+          font: { size: 12, family: "'Inter', sans-serif" },
+          callback: function(value: any) {
+            return value + ' Jt';
+          }
+        }
       },
       x: {
         grid: {
           display: false,
-          drawBorder: false,
         },
-        border: { display: false }
+        border: { display: false },
+        ticks: { 
+          padding: 10, 
+          color: '#374151',
+          font: { size: 13, family: "'Inter', sans-serif", weight: 'bold' } 
+        }
       },
     },
   };
@@ -440,11 +456,36 @@ function DashboardContent() {
 
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-3">
            <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-bold text-gray-800">Top 5 Produk</h2>
-             <button className="text-sm font-medium text-amber-600 hover:text-amber-700 px-3 py-1 bg-amber-50 rounded-lg">Lihat Semua</button>
+            <h2 className="text-lg font-bold text-gray-800">Peringkat Top 5 Produk</h2>
+             <Link href="/dashboard/top-sales" className="text-sm font-medium text-amber-600 hover:text-amber-700 px-3 py-1 bg-amber-50 rounded-lg transition-colors">Lihat Semua</Link>
           </div>
-          <div className="h-72 w-full">
-            <Bar data={barChartData} options={barChartOptions} />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="flex flex-col gap-4">
+              {topProductsData?.top5.map((productName: string, idx: number) => {
+                const total = topProductsData.productTotals[productName] || 0;
+                return (
+                  <div key={idx} className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-all">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${
+                        idx === 0 ? 'bg-amber-100 text-amber-700' :
+                        idx === 1 ? 'bg-gray-200 text-gray-700' :
+                        idx === 2 ? 'bg-orange-100 text-orange-700' :
+                        'bg-gray-50 text-gray-500'
+                      }`}>
+                      #{idx + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-semibold text-gray-900 truncate" title={productName}>{productName}</h4>
+                      <p className="text-xs text-gray-500 mt-0.5">Rp {(total / 1000).toLocaleString('id-ID', {minimumFractionDigits: 1, maximumFractionDigits: 1})} Jt</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="lg:col-span-2 relative min-h-[320px] w-full">
+              <div className="absolute inset-0">
+                <Bar data={barChartData} options={barChartOptions} />
+              </div>
+            </div>
           </div>
         </div>
       </div>

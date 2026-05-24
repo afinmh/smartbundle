@@ -11,6 +11,8 @@ function TopSalesContent() {
 
   const [topProducts, setTopProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const AVAILABLE_MONTHS = ['januari', 'februari', 'maret'];
@@ -64,9 +66,13 @@ function TopSalesContent() {
         trend: '+0%' // Placeholder since we don't have time-series trend yet
       })));
       setIsLoading(false);
+      setCurrentPage(1);
     });
 
   }, [selectedYearsParam, selectedMonthsParam]);
+
+  const totalPages = Math.ceil(topProducts.length / itemsPerPage);
+  const currentProducts = topProducts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="space-y-8 animate-fade-in-up">
@@ -91,14 +97,14 @@ function TopSalesContent() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-white">
-                  <th className="py-4 px-6 font-semibold text-gray-500 text-sm border-b border-gray-100">Peringkat</th>
+                  <th className="py-4 px-6 font-semibold text-gray-500 text-sm border-b border-gray-100 w-24">Peringkat</th>
                   <th className="py-4 px-6 font-semibold text-gray-500 text-sm border-b border-gray-100">Nama Produk/Bundling</th>
-                  <th className="py-4 px-6 font-semibold text-gray-500 text-sm border-b border-gray-100">Jumlah Terjual</th>
-                  <th className="py-4 px-6 font-semibold text-gray-500 text-sm border-b border-gray-100">Pendapatan</th>
+                  <th className="py-4 px-6 font-semibold text-gray-500 text-sm border-b border-gray-100 w-48">Jumlah Terjual</th>
+                  <th className="py-4 px-6 font-semibold text-gray-500 text-sm border-b border-gray-100 w-48">Pendapatan</th>
                 </tr>
               </thead>
               <tbody className="text-gray-700 divide-y divide-gray-50">
-                {topProducts.map((product) => (
+                {currentProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="py-4 px-6">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
@@ -127,10 +133,22 @@ function TopSalesContent() {
         
         {!isLoading && topProducts.length > 0 && (
           <div className="p-4 border-t border-gray-100 flex items-center justify-between text-sm text-gray-500">
-            <span>Menampilkan 1-{Math.min(topProducts.length, 50)} dari total data</span>
+            <span>Menampilkan {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, topProducts.length)} dari total {topProducts.length} data</span>
             <div className="flex gap-1">
-              <button className="px-3 py-1 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 disabled:opacity-50">Sebelumnnya</button>
-              <button className="px-3 py-1 bg-white border border-gray-200 rounded-md hover:bg-gray-50">Selanjutnya</button>
+              <button 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 disabled:opacity-50"
+              >
+                Sebelumnya
+              </button>
+              <button 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 bg-white border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-50"
+              >
+                Selanjutnya
+              </button>
             </div>
           </div>
         )}
