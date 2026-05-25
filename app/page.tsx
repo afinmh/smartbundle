@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import ScrollReveal from "@/components/ScrollReveal";
 
 export default function Home() {
@@ -29,7 +30,7 @@ export default function Home() {
           </p>
 
           <div className="opacity-0-init animate-fade-in-up delay-400 w-full sm:w-auto px-4 sm:px-0" style={{ animationDuration: '1.5s' }}>
-            <button className="w-full sm:w-auto group relative inline-flex items-center justify-center gap-3 bg-amber-400 text-black font-bold px-8 md:px-10 py-[18px] md:py-4 rounded-full hover:bg-amber-300 transition-all duration-300 shadow-[0_0_40px_-10px_rgba(251,191,36,0.6)] hover:shadow-[0_0_60px_-15px_rgba(251,191,36,0.8)] hover:-translate-y-1 text-[1.1rem] md:text-lg">
+            <Link href="/dashboard" className="w-full sm:w-auto group relative inline-flex items-center justify-center gap-3 bg-amber-400 text-black font-bold px-8 md:px-10 py-[18px] md:py-4 rounded-full hover:bg-amber-300 transition-all duration-300 shadow-[0_0_40px_-10px_rgba(251,191,36,0.6)] hover:shadow-[0_0_60px_-15px_rgba(251,191,36,0.8)] hover:-translate-y-1 text-[1.1rem] md:text-lg">
               Lihat Dashboard
               <svg
                 className="w-5 h-5 group-hover:translate-x-1 transition-transform"
@@ -39,7 +40,7 @@ export default function Home() {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
-            </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -255,10 +256,10 @@ export default function Home() {
             <div className="col-span-1 md:col-span-3 lg:col-span-2 lg:col-start-7">
               <h4 className="text-white font-bold mb-6 tracking-wide">Navigasi</h4>
               <ul className="space-y-4">
-                <li><a href="#" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Beranda</a></li>
-                <li><a href="#tentang" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Tentang</a></li>
-                <li><a href="#cara-kerja" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Cara Kerja</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Dashboard</a></li>
+                <li><Link href="/" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Beranda</Link></li>
+                <li><Link href="/#tentang" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Tentang</Link></li>
+                <li><Link href="/#cara-kerja" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Cara Kerja</Link></li>
+                <li><Link href="/dashboard" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Dashboard</Link></li>
               </ul>
             </div>
 

@@ -1,10 +1,11 @@
 "use client";
 
+import { Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useSearchParams } from 'next/navigation';
 
-export default function Sidebar() {
+function SidebarContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -73,5 +74,13 @@ export default function Sidebar() {
         </Link>
       </div>
     </aside>
+  );
+}
+
+export default function Sidebar() {
+  return (
+    <Suspense fallback={<aside className="w-56 bg-white border-r border-gray-100 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] hidden md:flex z-10 transition-all duration-300"></aside>}>
+      <SidebarContent />
+    </Suspense>
   );
 }

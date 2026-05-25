@@ -108,7 +108,6 @@ function DashboardContent() {
 
     const newChartData: { [year: string]: any } = {};
     const fetchPromises: Promise<any>[] = [];
-    const salesPromises: Promise<{ year: string, month: string, data: any[] }>[] = [];
 
     selectedYears.forEach(year => {
       const filename = year === '2025' ? 'summary_lama.json' : 'summary_baru.json';
@@ -124,26 +123,9 @@ function DashboardContent() {
         })
         .catch(() => null);
       fetchPromises.push(p);
-
-      // Fetch product sales data for top 5 products chart (assuming filenames stay as monthly)
-      AVAILABLE_MONTHS.forEach((month) => {
-         if (monthsToFetch.includes(month)) {
-            const oldFilenameFormat = year === '2025' ? `${month}.json` : `${month}_${year}.json`;
-            const sp = fetch(`/penjualan_summary/${oldFilenameFormat}`)
-              .then(res => {
-                if (!res.ok) return [];
-                return res.json();
-              })
-              .then(data => {
-                return { year, month, data };
-              })
-              .catch(() => ({ year, month, data: [] }));
-            salesPromises.push(sp);
-         }
-      });
     });
 
-    Promise.all([...fetchPromises, ...salesPromises]).then((results) => {
+    Promise.all(fetchPromises).then(() => {
       setChartData(newChartData);
 
       // Process summary data from fetchPromises
@@ -514,70 +496,110 @@ function DashboardContent() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="relative overflow-hidden p-6 rounded-[2rem] bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg shadow-amber-500/20 border border-white/30 hover:shadow-xl hover:shadow-amber-500/40 hover:-translate-y-1 transition-all duration-500 group">
-          {/* Glassy overlay for depth */}
+        <div className="relative overflow-hidden p-6 rounded-3xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg shadow-amber-500/20 border border-white/30 hover:shadow-xl hover:shadow-amber-500/30 hover:-translate-y-1 transition-all duration-500 group">
           <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-black/10 pointer-events-none"></div>
-          {/* Ambient blurred orbs */}
-          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/40 rounded-full blur-3xl pointer-events-none group-hover:scale-150 transition-transform duration-700"></div>
-          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-orange-600/40 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/40 rounded-full blur-2xl pointer-events-none group-hover:scale-150 transition-transform duration-700"></div>
           
-          <div className="flex justify-between items-start mb-6 relative z-10">
-            <h3 className="text-white/90 text-sm font-semibold tracking-wide uppercase drop-shadow-sm">Total Pendapatan</h3>
-            <div className="p-3 bg-white/20 text-white rounded-2xl shadow-sm backdrop-blur-md border border-white/40">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+          <div className="relative z-10 flex flex-col h-full justify-between">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-white/90 text-sm font-semibold tracking-wide uppercase drop-shadow-sm mb-0.5">Total Pendapatan</h3>
+                <p className="text-white/70 text-xs">Akumulasi Kuartal 1</p>
+              </div>
+              <div className="p-2.5 bg-white/20 text-white rounded-xl shadow-sm backdrop-blur-md border border-white/40">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+            
+            <div>
+              <div className="flex items-end gap-2 mb-2">
+                <p className="text-4xl font-black text-white leading-none tracking-tight drop-shadow-md">
+                  <span className="text-xl opacity-80 mr-1">Rp</span>
+                  {(totalPendapatan / 1000).toLocaleString('id-ID', {maximumFractionDigits:0})}
+                  <span className="text-xl opacity-80 ml-1.5">Jt</span>
+                </p>
+              </div>
+              <div className="flex items-center gap-2 mt-3">
+                <span className="inline-flex items-center gap-1 text-amber-100 bg-amber-500/40 px-2.5 py-1 rounded-full text-[11px] font-bold border border-amber-400/30 backdrop-blur-md shadow-sm">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                  Kinerja Stabil
+                </span>
+                <span className="text-white/80 text-xs font-medium">Bulan Jan-Mar</span>
+              </div>
             </div>
           </div>
-          <p className="text-5xl font-black text-white leading-none relative z-10 tracking-tight drop-shadow-md">Rp {(totalPendapatan / 1000).toLocaleString('id-ID', {maximumFractionDigits:0})} <span className="text-2xl text-white/80 font-bold">Jt</span></p>
-          <span className="text-white/95 text-xs font-bold flex items-center mt-6 relative z-10 bg-white/20 w-fit px-4 py-2 rounded-full border border-white/30 shadow-sm backdrop-blur-md">
-            <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
-            Kinerja Kuartal 1
-          </span>
         </div>
 
-        <div className="relative overflow-hidden p-6 rounded-[2rem] bg-gradient-to-br from-blue-400 to-indigo-500 text-white shadow-lg shadow-blue-500/20 border border-white/30 hover:shadow-xl hover:shadow-blue-500/40 hover:-translate-y-1 transition-all duration-500 group">
-          {/* Glassy overlay for depth */}
+        <div className="relative overflow-hidden p-6 rounded-3xl bg-gradient-to-br from-blue-400 to-indigo-500 text-white shadow-lg shadow-blue-500/20 border border-white/30 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-1 transition-all duration-500 group">
           <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-black/10 pointer-events-none"></div>
-          {/* Ambient blurred orbs */}
-          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/40 rounded-full blur-3xl pointer-events-none group-hover:scale-150 transition-transform duration-700"></div>
-          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-600/40 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/40 rounded-full blur-2xl pointer-events-none group-hover:scale-150 transition-transform duration-700"></div>
           
-          <div className="flex justify-between items-start mb-6 relative z-10">
-            <h3 className="text-white/90 text-sm font-semibold tracking-wide uppercase drop-shadow-sm">Total Transaksi</h3>
-            <div className="p-3 bg-white/20 text-white rounded-2xl shadow-sm backdrop-blur-md border border-white/40">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
+          <div className="relative z-10 flex flex-col h-full justify-between">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-white/90 text-sm font-semibold tracking-wide uppercase drop-shadow-sm mb-0.5">Total Transaksi</h3>
+                <p className="text-white/70 text-xs">Akumulasi Kuartal 1</p>
+              </div>
+              <div className="p-2.5 bg-white/20 text-white rounded-xl shadow-sm backdrop-blur-md border border-white/40">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              </div>
+            </div>
+            
+            <div>
+              <div className="flex items-end gap-2 mb-2">
+                <p className="text-4xl font-black text-white leading-none tracking-tight drop-shadow-md">
+                  {totalTransaksi.toLocaleString('id-ID')}
+                  <span className="text-xl opacity-80 ml-1.5">Trx</span>
+                </p>
+              </div>
+              <div className="flex items-center gap-2 mt-3">
+                <span className="inline-flex items-center gap-1 text-blue-100 bg-blue-500/40 px-2.5 py-1 rounded-full text-[11px] font-bold border border-blue-400/30 backdrop-blur-md shadow-sm">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                  Kinerja Stabil
+                </span>
+                <span className="text-white/80 text-xs font-medium">Bulan Jan-Mar</span>
+              </div>
             </div>
           </div>
-          <p className="text-5xl font-black text-white leading-none relative z-10 tracking-tight drop-shadow-md">{totalTransaksi.toLocaleString('id-ID')}</p>
-          <span className="text-white/95 text-xs font-bold flex items-center mt-6 relative z-10 bg-white/20 w-fit px-4 py-2 rounded-full border border-white/30 shadow-sm backdrop-blur-md">
-            <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
-            Kinerja Kuartal 1
-          </span>
         </div>
 
-        <div className="relative overflow-hidden p-6 rounded-[2rem] bg-gradient-to-br from-rose-400 to-pink-500 text-white shadow-lg shadow-rose-500/20 border border-white/30 hover:shadow-xl hover:shadow-rose-500/40 hover:-translate-y-1 transition-all duration-500 group">
-          {/* Glassy overlay for depth */}
+        <div className="relative overflow-hidden p-6 rounded-3xl bg-gradient-to-br from-rose-400 to-pink-500 text-white shadow-lg shadow-rose-500/20 border border-white/30 hover:shadow-xl hover:shadow-rose-500/30 hover:-translate-y-1 transition-all duration-500 group">
           <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-black/10 pointer-events-none"></div>
-          {/* Ambient blurred orbs */}
-          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/40 rounded-full blur-3xl pointer-events-none group-hover:scale-150 transition-transform duration-700"></div>
-          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-pink-600/40 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/40 rounded-full blur-2xl pointer-events-none group-hover:scale-150 transition-transform duration-700"></div>
           
-          <div className="flex justify-between items-start mb-6 relative z-10">
-            <h3 className="text-white/90 text-sm font-semibold tracking-wide uppercase drop-shadow-sm">Total Pelanggan</h3>
-            <div className="p-3 bg-white/20 text-white rounded-2xl shadow-sm backdrop-blur-md border border-white/40">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
+          <div className="relative z-10 flex flex-col h-full justify-between">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-white/90 text-sm font-semibold tracking-wide uppercase drop-shadow-sm mb-0.5">Total Pelanggan</h3>
+                <p className="text-white/70 text-xs">Akumulasi Kuartal 1</p>
+              </div>
+              <div className="p-2.5 bg-white/20 text-white rounded-xl shadow-sm backdrop-blur-md border border-white/40">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+            </div>
+            
+            <div>
+              <div className="flex items-end gap-2 mb-2">
+                <p className="text-4xl font-black text-white leading-none tracking-tight drop-shadow-md">
+                  {totalPelanggan.toLocaleString('id-ID')}
+                  <span className="text-xl opacity-80 ml-1.5">Orang</span>
+                </p>
+              </div>
+              <div className="flex items-center gap-2 mt-3">
+                <span className="inline-flex items-center gap-1 text-rose-100 bg-rose-500/40 px-2.5 py-1 rounded-full text-[11px] font-bold border border-rose-400/30 backdrop-blur-md shadow-sm">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                  Kinerja Stabil
+                </span>
+                <span className="text-white/80 text-xs font-medium">Bulan Jan-Mar</span>
+              </div>
             </div>
           </div>
-          <p className="text-5xl font-black text-white leading-none relative z-10 tracking-tight drop-shadow-md">{totalPelanggan.toLocaleString('id-ID')}</p>
-          <span className="text-white/95 text-xs font-bold flex items-center mt-6 relative z-10 bg-white/20 w-fit px-4 py-2 rounded-full border border-white/30 shadow-sm backdrop-blur-md">
-            <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
-            Kinerja Kuartal 1
-          </span>
         </div>
       </div>
 
