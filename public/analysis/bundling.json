@@ -1,0 +1,156 @@
+{
+    "data": [
+        {
+            "no": 1,
+            "produk_bundling": "[COD] Sarung Dewasa Sarung Motif Songket Simple Premium Termurah + Sarung Songket Modern Sarung Premium Sarung Dewasa",
+            "terjual": {
+                "lama": 52,
+                "baru": 101,
+                "selisih": 49
+            },
+            "utility": {
+                "lama": 2169215,
+                "baru": 4213283,
+                "selisih": 2044068
+            }
+        },
+        {
+            "no": 2,
+            "produk_bundling": "Sarung Instan Anak Karaker Untuk Usia 2-7 Tahun + Sarung Songket Modern Sarung Premium Sarung Dewasa",
+            "terjual": {
+                "lama": 2,
+                "baru": 8,
+                "selisih": 6
+            },
+            "utility": {
+                "lama": 582165,
+                "baru": 692704,
+                "selisih": 110539
+            }
+        },
+        {
+            "no": 3,
+            "produk_bundling": "Sajadah Kepala Anak Bludru Hitam Ukuran Kecil Motif Kiswah Termurah + Sarung Songket Modern Sarung Premium Sarung Dewasa",
+            "terjual": {
+                "lama": 1,
+                "baru": 4,
+                "selisih": 3
+            },
+            "utility": {
+                "lama": 560915,
+                "baru": 657282,
+                "selisih": 96367
+            }
+        },
+        {
+            "no": 4,
+            "produk_bundling": "Sarung Tenun Dewasa Aljabar Guci + [COD] Sarung Dewasa Sarung Motif Songket Simple Premium Termurah",
+            "terjual": {
+                "lama": 15,
+                "baru": 27,
+                "selisih": 12
+            },
+            "utility": {
+                "lama": 363715,
+                "baru": 654687,
+                "selisih": 290972
+            }
+        },
+        {
+            "no": 5,
+            "produk_bundling": "Sarung Dewasa Motif Songket Travel Mini Pouch Exclusive + SMCollection - Sarung Travel Songket Kemasan Pouch",
+            "terjual": {
+                "lama": 13,
+                "baru": 22,
+                "selisih": 9
+            },
+            "utility": {
+                "lama": 355215,
+                "baru": 388559,
+                "selisih": 33344
+            }
+        },
+        {
+            "no": 6,
+            "produk_bundling": "Mukena Travel Mini Pouch Parasut Korea 2 in 1 Free Tasbih Digital + SMCollection - Sarung Travel Songket Kemasan Pouch",
+            "terjual": {
+                "lama": 5,
+                "baru": 8,
+                "selisih": 3
+            },
+            "utility": {
+                "lama": 277355,
+                "baru": 321640,
+                "selisih": 44285
+            }
+        },
+        {
+            "no": 7,
+            "produk_bundling": "Sarung Dewasa Motif Sabuk Gajah Asia + Sarung Songket Modern Sarung Premium Sarung Dewasa",
+            "terjual": {
+                "lama": 10,
+                "baru": 15,
+                "selisih": 5
+            },
+            "utility": {
+                "lama": 264860,
+                "baru": 455430,
+                "selisih": 190570
+            }
+        },
+        {
+            "no": 8,
+            "produk_bundling": "SMCollection - Sarung Travel Songket Kemasan Pouch + Sarung Songket Modern Sarung Premium Sarung Dewasa",
+            "terjual": {
+                "lama": 8,
+                "baru": 8,
+                "selisih": 0
+            },
+            "utility": {
+                "lama": 252450,
+                "baru": 271413,
+                "selisih": 18963
+            }
+        },
+        {
+            "no": 9,
+            "produk_bundling": "Sarung Tenun Dewasa Aljabar Guci + Sarung Songket Modern Sarung Premium Sarung Dewasa",
+            "terjual": {
+                "lama": 6,
+                "baru": 22,
+                "selisih": 16
+            },
+            "utility": {
+                "lama": 217940,
+                "baru": 539913,
+                "selisih": 321973
+            }
+        },
+        {
+            "no": 10,
+            "produk_bundling": "SMCollection - Sarung Dewasa Motif Sabuk Gajah Mina + Sarung Dewasa Motif Sabuk Gajah Asia",
+            "terjual": {
+                "lama": 3,
+                "baru": 21,
+                "selisih": 18
+            },
+            "utility": {
+                "lama": 201620,
+                "baru": 213316,
+                "selisih": 11696
+            }
+        }
+    ],
+    "total": {
+        "terjual": {
+            "lama": 115,
+            "baru": 236,
+            "selisih": 121
+        },
+        "utility": {
+            "lama": 5245450,
+            "baru": 8408227,
+            "selisih": 3162777
+        }
+    }
+}

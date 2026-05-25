@@ -1,0 +1,146 @@
+{
+    "data": [
+        {
+            "nama_produk": "[COD] Sarung Dewasa Sarung Motif Songket Simple Premium Termurah",
+            "jumlah_terjual": {
+                "lama": 374,
+                "baru": 600,
+                "selisih": 226
+            },
+            "utility": {
+                "lama": 2169120,
+                "baru": 3479872,
+                "selisih": 1310752
+            }
+        },
+        {
+            "nama_produk": "Sarung Songket Modern Sarung Premium Sarung Dewasa",
+            "jumlah_terjual": {
+                "lama": 425,
+                "baru": 471,
+                "selisih": 46
+            },
+            "utility": {
+                "lama": 2401947,
+                "baru": 2697914,
+                "selisih": 295967
+            }
+        },
+        {
+            "nama_produk": "Sarung Instan Anak Karaker Untuk Usia 2-7 Tahun",
+            "jumlah_terjual": {
+                "lama": 50,
+                "baru": 107,
+                "selisih": 57
+            },
+            "utility": {
+                "lama": 305706,
+                "baru": 654211,
+                "selisih": 348505
+            }
+        },
+        {
+            "nama_produk": "Sajadah Kepala Anak Bludru Hitam Ukuran Kecil Motif Kiswah Termurah",
+            "jumlah_terjual": {
+                "lama": 47,
+                "baru": 101,
+                "selisih": 54
+            },
+            "utility": {
+                "lama": 295630,
+                "baru": 635290,
+                "selisih": 339660
+            }
+        },
+        {
+            "nama_produk": "Sarung Tenun Dewasa Aljabar Guci",
+            "jumlah_terjual": {
+                "lama": 71,
+                "baru": 70,
+                "selisih": -1
+            },
+            "utility": {
+                "lama": 389300,
+                "baru": 383817,
+                "selisih": -5483
+            }
+        },
+        {
+            "nama_produk": "Sarung Dewasa Motif Songket Travel Mini Pouch Exclusive",
+            "jumlah_terjual": {
+                "lama": 79,
+                "baru": 106,
+                "selisih": 27
+            },
+            "utility": {
+                "lama": 550072,
+                "baru": 740609,
+                "selisih": 190537
+            }
+        },
+        {
+            "nama_produk": "SMCollection - Sarung Travel Songket Kemasan Pouch",
+            "jumlah_terjual": {
+                "lama": 99,
+                "baru": 242,
+                "selisih": 143
+            },
+            "utility": {
+                "lama": 613275,
+                "baru": 1529871,
+                "selisih": 916596
+            }
+        },
+        {
+            "nama_produk": "Mukena Travel Mini Pouch Parasut Korea 2 in 1 Free Tasbih Digital",
+            "jumlah_terjual": {
+                "lama": 12,
+                "baru": 8,
+                "selisih": -4
+            },
+            "utility": {
+                "lama": 408000,
+                "baru": 272000,
+                "selisih": -136000
+            }
+        },
+        {
+            "nama_produk": "Sarung Dewasa Motif Sabuk Gajah Asia",
+            "jumlah_terjual": {
+                "lama": 71,
+                "baru": 206,
+                "selisih": 135
+            },
+            "utility": {
+                "lama": 327250,
+                "baru": 976616,
+                "selisih": 649366
+            }
+        },
+        {
+            "nama_produk": "SMCollection - Sarung Dewasa Motif Sabuk Gajah Mina",
+            "jumlah_terjual": {
+                "lama": 34,
+                "baru": 26,
+                "selisih": -8
+            },
+            "utility": {
+                "lama": 155210,
+                "baru": 122060,
+                "selisih": -33150
+            }
+        }
+    ],
+    "total": {
+        "jumlah_terjual": {
+            "lama": 1262,
+            "baru": 1937,
+            "selisih": 675
+        },
+        "utility": {
+            "lama": 7615510,
+            "baru": 11492260,
+            "selisih": 3876750
+        }
+    }
+}

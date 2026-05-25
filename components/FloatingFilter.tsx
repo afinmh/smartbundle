@@ -9,15 +9,12 @@ export default function FloatingFilter() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  // default to all available years and months
+  // default to all available years
   const selectedYearsParam = searchParams.get('years') || '2025,2026';
-  const selectedMonthsParam = searchParams.get('months') || 'januari,februari,maret';
-
   const selectedYears = selectedYearsParam.split(',').filter(Boolean);
-  const selectedMonths = selectedMonthsParam.split(',').filter(Boolean);
 
-  const toggleSelection = (type: 'years' | 'months', value: string) => {
-    const currentList = type === 'years' ? [...selectedYears] : [...selectedMonths];
+  const toggleSelection = (type: 'years', value: string) => {
+    const currentList = [...selectedYears];
     const index = currentList.indexOf(value);
     
     if (index > -1) {
@@ -49,24 +46,6 @@ export default function FloatingFilter() {
           className={`absolute w-12 h-12 left-1 top-1 rounded-full flex items-center justify-center text-xs font-bold shadow-lg transition-all duration-300 hover:scale-110 ${filterOpen ? 'opacity-100 scale-100 translate-x-[-72px] translate-y-0' : 'opacity-0 scale-50 translate-x-0 translate-y-0 pointer-events-none'} ${selectedYears.includes('2025') ? 'bg-amber-500 text-white' : 'bg-white text-gray-700'}`}
         >
           2025
-        </button>
-        <button 
-          onClick={() => toggleSelection('months', 'januari')}
-          className={`absolute w-12 h-12 left-1 top-1 rounded-full flex items-center justify-center text-xs font-bold shadow-lg transition-all duration-300 hover:scale-110 ${filterOpen ? 'opacity-100 scale-100 translate-x-[-144px] translate-y-0' : 'opacity-0 scale-50 translate-x-0 translate-y-0 pointer-events-none'} ${selectedMonths.includes('januari') ? 'bg-blue-500 text-white' : 'bg-white text-gray-700'}`}
-        >
-          Jan
-        </button>
-        <button 
-          onClick={() => toggleSelection('months', 'februari')}
-          className={`absolute w-12 h-12 left-1 top-1 rounded-full flex items-center justify-center text-xs font-bold shadow-lg transition-all duration-300 hover:scale-110 ${filterOpen ? 'opacity-100 scale-100 translate-x-[-72px] translate-y-[-72px]' : 'opacity-0 scale-50 translate-x-0 translate-y-0 pointer-events-none'} ${selectedMonths.includes('februari') ? 'bg-blue-500 text-white' : 'bg-white text-gray-700'}`}
-        >
-          Feb
-        </button>
-        <button 
-          onClick={() => toggleSelection('months', 'maret')}
-          className={`absolute w-12 h-12 left-1 top-1 rounded-full flex items-center justify-center text-xs font-bold shadow-lg transition-all duration-300 hover:scale-110 ${filterOpen ? 'opacity-100 scale-100 translate-x-0 translate-y-[-144px]' : 'opacity-0 scale-50 translate-x-0 translate-y-0 pointer-events-none'} ${selectedMonths.includes('maret') ? 'bg-blue-500 text-white' : 'bg-white text-gray-700'}`}
-        >
-          Mar
         </button>
 
         {/* Main Bubble */}

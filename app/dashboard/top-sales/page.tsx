@@ -20,54 +20,62 @@ function TopSalesContent() {
     const selectedYears = selectedYearsParam.split(',').filter(Boolean);
     const selectedMonths = selectedMonthsParam.split(',').filter(Boolean);
     
-    const monthsToFetch = selectedMonths.filter(m => AVAILABLE_MONTHS.includes(m));
-    const fetchPromises: Promise<any[]>[] = [];
+    let topProductsUrl = '';
+    if (selectedYears.includes('2025') && selectedYears.includes('2026')) {
+      topProductsUrl = '/penjualan_summary/summary_produk_gabungan.json';
+    } else if (selectedYears.includes('2026')) {
+      topProductsUrl = '/penjualan_summary/summary_produk_baru.json';
+    } else if (selectedYears.includes('2025')) {
+      topProductsUrl = '/penjualan_summary/summary_produk_lama.json';
+    }
 
-    setIsLoading(true);
+    if (topProductsUrl) {
+      setIsLoading(true);
+      fetch(topProductsUrl)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (!data) return;
+          
+          const productMap: { [key: string]: { name: string, sold: number, revenue: number } } = {};
+          
+          AVAILABLE_MONTHS.forEach(month => {
+            let combinedData: any[] = [];
+            if (data.lama && data.baru) {
+              const lamaData = data.lama[month] || [];
+              const baruData = data.baru[month] || [];
+              combinedData = [...lamaData, ...baruData];
+            } else {
+              combinedData = data[month] || [];
+            }
+            
+            combinedData.forEach(item => {
+               const name = item['Nama Produk'];
+               if (!productMap[name]) {
+                 productMap[name] = { name, sold: 0, revenue: 0 };
+               }
+               productMap[name].sold += item.jumlah_terjual || 0;
+               productMap[name].revenue += item.total_penjualan || 0;
+            });
+          });
 
-    selectedYears.forEach(year => {
-      monthsToFetch.forEach(month => {
-        const filename = year === '2025' ? `${month}.json` : `${month}_${year}.json`;
-        const p = fetch(`/penjualan_summary/${filename}`)
-          .then(res => {
-            if (!res.ok) return [];
-            return res.json();
-          })
-          .catch(() => []);
-        fetchPromises.push(p);
-      });
-    });
-
-    Promise.all(fetchPromises).then((results) => {
-      // Aggregate data
-      const productMap: { [key: string]: { name: string, sold: number, revenue: number } } = {};
-
-      results.forEach(monthData => {
-        monthData.forEach((item: any) => {
-          const name = item['Nama Produk'];
-          if (!productMap[name]) {
-            productMap[name] = { name, sold: 0, revenue: 0 };
-          }
-          productMap[name].sold += item.jumlah_terjual || 0;
-          productMap[name].revenue += item.total_penjualan || 0;
+          // Convert to array and sort by sold amount descending
+          let aggregatedProducts = Object.values(productMap).sort((a, b) => b.sold - a.sold);
+          
+          setTopProducts(aggregatedProducts.slice(0, 50).map((prod, idx) => ({
+            id: idx + 1,
+            name: prod.name,
+            sold: prod.sold,
+            revenue: `Rp ${(prod.revenue / 1000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Jt`,
+            trend: '+0%' // Placeholder since we don't have time-series trend yet
+          })));
+          setIsLoading(false);
+          setCurrentPage(1);
+        })
+        .catch(() => {
+          setIsLoading(false);
+          setTopProducts([]);
         });
-      });
-
-      // Convert to array and sort by sold amount descending
-      let aggregatedProducts = Object.values(productMap).sort((a, b) => b.sold - a.sold);
-      
-      // Limit to top 50, assign ranks & trends (dummy trend for now)
-      setTopProducts(aggregatedProducts.slice(0, 50).map((prod, idx) => ({
-        id: idx + 1,
-        name: prod.name,
-        sold: prod.sold,
-        // format to Juta if > 1000, or raw
-        revenue: `Rp ${(prod.revenue / 1000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Jt`,
-        trend: '+0%' // Placeholder since we don't have time-series trend yet
-      })));
-      setIsLoading(false);
-      setCurrentPage(1);
-    });
+    }
 
   }, [selectedYearsParam, selectedMonthsParam]);
 
