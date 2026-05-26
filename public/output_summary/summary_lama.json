@@ -1,26 +1,26 @@
 {
-    "januari":{
-        "total_profit":9172.008,
-        "total_transaksi":94,
-        "total_pelanggan":93,
-        "rata_rata_aov":412.63
+    "januari": {
+        "total_profit": 9172.008,
+        "total_transaksi": 94,
+        "total_pelanggan": 93,
+        "data_terjual": 461
     },
-    "februari":{
-        "total_profit":22607.799,
-        "total_transaksi":191,
-        "total_pelanggan":180,
-        "rata_rata_aov":710.75
+    "februari": {
+        "total_profit": 22607.799,
+        "total_transaksi": 191,
+        "total_pelanggan": 180,
+        "data_terjual": 958
     },
-    "maret":{
-        "total_profit":3575.249,
-        "total_transaksi":35,
-        "total_pelanggan":35,
-        "rata_rata_aov":477.99
+    "maret": {
+        "total_profit": 3575.249,
+        "total_transaksi": 35,
+        "total_pelanggan": 35,
+        "data_terjual": 166
     },
-    "summary":{
-        "total_profit":35355.056,
-        "total_transaksi":320,
-        "total_pelanggan":308,
-        "rata_rata_aov":110.48
+    "summary": {
+        "total_profit": 35355.056,
+        "total_transaksi": 320,
+        "total_pelanggan": 308,
+        "total_data_terjual": 1585
     }
 }

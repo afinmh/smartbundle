@@ -1,0 +1,105 @@
+{
+    "total_produk_unik": 10,
+    "mapping_produk": {
+        "[COD] Sarung Dewasa Sarung Motif Songket Simple Premium Termurah": [
+            {
+                "bundle_no": 1,
+                "sebagai_item": 1
+            },
+            {
+                "bundle_no": 4,
+                "sebagai_item": 2
+            }
+        ],
+        "Sarung Songket Modern Sarung Premium Sarung Dewasa": [
+            {
+                "bundle_no": 1,
+                "sebagai_item": 2
+            },
+            {
+                "bundle_no": 2,
+                "sebagai_item": 2
+            },
+            {
+                "bundle_no": 3,
+                "sebagai_item": 2
+            },
+            {
+                "bundle_no": 7,
+                "sebagai_item": 2
+            },
+            {
+                "bundle_no": 8,
+                "sebagai_item": 2
+            },
+            {
+                "bundle_no": 9,
+                "sebagai_item": 2
+            }
+        ],
+        "Sarung Instan Anak Karaker Untuk Usia 2-7 Tahun": [
+            {
+                "bundle_no": 2,
+                "sebagai_item": 1
+            }
+        ],
+        "Sajadah Kepala Anak Bludru Hitam Ukuran Kecil Motif Kiswah Termurah": [
+            {
+                "bundle_no": 3,
+                "sebagai_item": 1
+            }
+        ],
+        "Sarung Tenun Dewasa Aljabar Guci": [
+            {
+                "bundle_no": 4,
+                "sebagai_item": 1
+            },
+            {
+                "bundle_no": 9,
+                "sebagai_item": 1
+            }
+        ],
+        "Sarung Dewasa Motif Songket Travel Mini Pouch Exclusive": [
+            {
+                "bundle_no": 5,
+                "sebagai_item": 1
+            }
+        ],
+        "SMCollection - Sarung Travel Songket Kemasan Pouch": [
+            {
+                "bundle_no": 5,
+                "sebagai_item": 2
+            },
+            {
+                "bundle_no": 6,
+                "sebagai_item": 2
+            },
+            {
+                "bundle_no": 8,
+                "sebagai_item": 1
+            }
+        ],
+        "Mukena Travel Mini Pouch Parasut Korea 2 in 1 Free Tasbih Digital": [
+            {
+                "bundle_no": 6,
+                "sebagai_item": 1
+            }
+        ],
+        "Sarung Dewasa Motif Sabuk Gajah Asia": [
+            {
+                "bundle_no": 7,
+                "sebagai_item": 1
+            },
+            {
+                "bundle_no": 10,
+                "sebagai_item": 2
+            }
+        ],
+        "SMCollection - Sarung Dewasa Motif Sabuk Gajah Mina": [
+            {
+                "bundle_no": 10,
+                "sebagai_item": 1
+            }
+        ]
+    }
+}

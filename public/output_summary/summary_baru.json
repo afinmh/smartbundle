@@ -3,24 +3,24 @@
         "total_profit": 16500.17,
         "total_transaksi": 124,
         "total_pelanggan": 99,
-        "rata_rata_aov": 1178.08
+        "data_terjual": 1080
     },
     "februari": {
         "total_profit": 28329.08,
         "total_transaksi": 246,
         "total_pelanggan": 203,
-        "rata_rata_aov": 595.68
+        "data_terjual": 1780
     },
     "maret": {
         "total_profit": 9500.22,
         "total_transaksi": 80,
         "total_pelanggan": 53,
-        "rata_rata_aov": 817.46
+        "data_terjual": 558
     },
     "summary": {
         "total_profit": 54328.659,
         "total_transaksi": 451,
         "total_pelanggan": 355,
-        "rata_rata_aov": 120.46
+        "total_data_terjual": 3418
     }
 }

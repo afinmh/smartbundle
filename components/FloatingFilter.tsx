@@ -13,6 +13,10 @@ export default function FloatingFilter() {
   const selectedYearsParam = searchParams.get('years') || '2025,2026';
   const selectedYears = selectedYearsParam.split(',').filter(Boolean);
 
+  if (pathname.startsWith('/dashboard/bundling')) {
+    return null;
+  }
+
   const toggleSelection = (type: 'years', value: string) => {
     const currentList = [...selectedYears];
     const index = currentList.indexOf(value);

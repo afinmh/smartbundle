@@ -26,7 +26,7 @@ export default function Home() {
           </h1>
 
           <p className="text-[15px] sm:text-base md:text-lg text-gray-200 mb-8 md:mb-10 max-w-[20rem] sm:max-w-[24rem] md:max-w-xl mx-auto leading-relaxed font-light drop-shadow opacity-0-init animate-fade-in-up delay-200" style={{ animationDuration: '1.5s' }}>
-            Sistem rekomendasi strategi bundling terbaik berdasarkan riwayat penjualan toko untuk memaksimalkan profitabilitas.
+            Sistem rekomendasi strategi bundling berdasarkan riwayat penjualan toko untuk memaksimalkan profitabilitas.
           </p>
 
           <div className="opacity-0-init animate-fade-in-up delay-400 w-full sm:w-auto px-4 sm:px-0" style={{ animationDuration: '1.5s' }}>
@@ -139,7 +139,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3 relative z-10">Tarik Data</h3>
                 <p className="text-gray-600 text-sm leading-relaxed relative z-10">
-                  Sistem memproses data riil dari riwayat pesanan pelanggan toko Anda secara menyeluruh.
+                  Sistem memproses data dari riwayat pesanan pelanggan toko Anda secara menyeluruh.
                 </p>
                 <div className="mt-auto pt-6 relative z-10">
                   <span className="inline-flex px-3 py-1 bg-amber-50/80 text-amber-700 text-[11px] font-bold uppercase tracking-wider rounded-lg border border-amber-100/50">Studi: 7.625 Transaksi</span>

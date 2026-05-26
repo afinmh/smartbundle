@@ -64,6 +64,36 @@ function SidebarContent() {
           </svg>
           Bundling
         </Link>
+        {pathname.startsWith('/dashboard/bundling') && (
+          <div className="pl-6 pt-1 flex flex-col space-y-1">
+            <Link
+              href={`/dashboard/bundling/produk${searchParams.toString() ? `?${searchParams.toString()}` : ''}`}
+              className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
+                pathname === '/dashboard/bundling/produk'
+                  ? 'text-amber-700 bg-amber-50/80 shadow-sm ring-1 ring-amber-100/50'
+                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+              }`}
+            >
+              <span>Produk</span>
+              <svg className={`w-4 h-4 transition-transform duration-200 ${pathname !== '/dashboard/bundling/produk' ? 'group-hover:translate-x-1' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+              </svg>
+            </Link>
+            <Link
+              href={`/dashboard/bundling/analysis${searchParams.toString() ? `?${searchParams.toString()}` : ''}`}
+              className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
+                pathname === '/dashboard/bundling/analysis'
+                  ? 'text-amber-700 bg-amber-50/80 shadow-sm ring-1 ring-amber-100/50'
+                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+              }`}
+            >
+              <span>Analysis</span>
+              <svg className={`w-4 h-4 transition-transform duration-200 ${pathname !== '/dashboard/bundling/analysis' ? 'group-hover:translate-x-1' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </Link>
+          </div>
+        )}
       </nav>
       <div className="p-4 border-t border-gray-50">
          <Link href="/" className="flex items-center px-3.5 py-3 text-sm text-gray-500 rounded-xl hover:bg-gray-50 hover:text-gray-900 font-medium transition-all duration-200 group">
