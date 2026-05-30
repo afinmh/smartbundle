@@ -9,29 +9,17 @@ export default function FloatingFilter() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  // default to all available years
-  const selectedYearsParam = searchParams.get('years') || '2025,2026';
-  const selectedYears = selectedYearsParam.split(',').filter(Boolean);
+  // default to single year
+  const selectedYearsParam = searchParams.get('years') || '2026';
+  const selectedYears = [selectedYearsParam];
 
   if (pathname.startsWith('/dashboard/bundling')) {
     return null;
   }
 
   const toggleSelection = (type: 'years', value: string) => {
-    const currentList = [...selectedYears];
-    const index = currentList.indexOf(value);
-    
-    if (index > -1) {
-       // Prevent deselecting if it's the last selected item
-       if (currentList.length > 1) {
-           currentList.splice(index, 1);
-       }
-    } else {
-       currentList.push(value);
-    }
-    
     const newParams = new URLSearchParams(searchParams.toString());
-    newParams.set(type, currentList.join(','));
+    newParams.set(type, value);
     router.push(`${pathname}?${newParams.toString()}`, { scroll: false });
   }
 

@@ -15,67 +15,50 @@ function TopSalesContent() {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    const AVAILABLE_MONTHS = ['januari', 'februari', 'maret'];
-    
     const selectedYears = selectedYearsParam.split(',').filter(Boolean);
-    const selectedMonths = selectedMonthsParam.split(',').filter(Boolean);
     
-    let topProductsUrl = '';
-    if (selectedYears.includes('2025') && selectedYears.includes('2026')) {
-      topProductsUrl = '/penjualan_summary/summary_produk_gabungan.json';
-    } else if (selectedYears.includes('2026')) {
-      topProductsUrl = '/penjualan_summary/summary_produk_baru.json';
-    } else if (selectedYears.includes('2025')) {
-      topProductsUrl = '/penjualan_summary/summary_produk_lama.json';
-    }
+    setIsLoading(true);
 
-    if (topProductsUrl) {
-      setIsLoading(true);
-      fetch(topProductsUrl)
-        .then(res => res.ok ? res.json() : null)
-        .then(data => {
-          if (!data) return;
-          
-          const productMap: { [key: string]: { name: string, sold: number, revenue: number } } = {};
-          
-          AVAILABLE_MONTHS.forEach(month => {
-            let combinedData: any[] = [];
-            if (data.lama && data.baru) {
-              const lamaData = data.lama[month] || [];
-              const baruData = data.baru[month] || [];
-              combinedData = [...lamaData, ...baruData];
-            } else {
-              combinedData = data[month] || [];
-            }
-            
-            combinedData.forEach(item => {
-               const name = item['Nama Produk'];
-               if (!productMap[name]) {
-                 productMap[name] = { name, sold: 0, revenue: 0 };
-               }
-               productMap[name].sold += item.jumlah_terjual || 0;
-               productMap[name].revenue += item.total_penjualan || 0;
-            });
-          });
+    const processData = (csvText: string, productMap: { [key: string]: { name: string, sold: number, revenue: number } }) => {
+      const lines = csvText.trim().split('\n').filter(l => l.length > 0);
+      // skip header
+      for (let i = 1; i < lines.length; i++) {
+         const parts = lines[i].split(',');
+         const revenue = parseFloat(parts.pop() || '0');
+         const sold = parseInt(parts.pop() || '0', 10);
+         const name = parts.join(',').trim();
+         
+         if (!productMap[name]) productMap[name] = { name, sold: 0, revenue: 0 };
+         productMap[name].sold += sold;
+         productMap[name].revenue += revenue;
+      }
+    };
 
-          // Convert to array and sort by sold amount descending
-          let aggregatedProducts = Object.values(productMap).sort((a, b) => b.sold - a.sold);
-          
-          setTopProducts(aggregatedProducts.slice(0, 50).map((prod, idx) => ({
-            id: idx + 1,
-            name: prod.name,
-            sold: prod.sold,
-            revenue: `Rp ${(prod.revenue / 1000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Jt`,
-            trend: '+0%' // Placeholder since we don't have time-series trend yet
-          })));
-          setIsLoading(false);
-          setCurrentPage(1);
-        })
-        .catch(() => {
-          setIsLoading(false);
-          setTopProducts([]);
-        });
-    }
+    const fetch1 = selectedYears.includes('2025') ? fetch('/analysis/top_produk_2025.csv').then(r => r.ok ? r.text() : '').catch(() => '') : Promise.resolve('');
+    const fetch2 = selectedYears.includes('2026') ? fetch('/analysis/top_produk_2026.csv').then(r => r.ok ? r.text() : '').catch(() => '') : Promise.resolve('');
+
+    Promise.all([fetch1, fetch2]).then(([csv1, csv2]) => {
+      const productMap: { [key: string]: { name: string, sold: number, revenue: number } } = {};
+      
+      if (csv1) processData(csv1, productMap);
+      if (csv2) processData(csv2, productMap);
+      
+      let aggregatedProducts = Object.values(productMap).sort((a, b) => b.sold - a.sold);
+      
+      setTopProducts(aggregatedProducts.map((prod, idx) => ({
+        id: idx + 1,
+        name: prod.name,
+        sold: prod.sold,
+        revenue: `Rp ${(prod.revenue / 1000).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 1 })} Jt`,
+        trend: '+0%' // Placeholder since we don't have time-series trend yet
+      })));
+      setIsLoading(false);
+      setCurrentPage(1);
+    })
+    .catch(() => {
+      setIsLoading(false);
+      setTopProducts([]);
+    });
 
   }, [selectedYearsParam, selectedMonthsParam]);
 

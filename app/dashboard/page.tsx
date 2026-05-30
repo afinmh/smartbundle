@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -16,7 +16,7 @@ import {
   ArcElement,
   Filler
 } from 'chart.js';
-import { Bar, Line } from 'react-chartjs-2';
+import { Bar, Line, Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -170,34 +170,37 @@ const externalTooltipHandler = (context: any) => {
 
 function DashboardContent() {
   const searchParams = useSearchParams();
-  const selectedYearsParam = searchParams.get('years') || '2025,2026';
-  const [summaryData, setSummaryData] = useState<any>(null);
+  const selectedYear = searchParams.get('years') || '2026';
+  
   const [chartData, setChartData] = useState<{ [year: string]: any }>({});
   const [topProductsData, setTopProductsData] = useState<any>(null);
-  const [comparisonData, setComparisonData] = useState<{ lama: any, baru: any }>({ lama: null, baru: null });
-  const [chartMetric, setChartMetric] = useState<'profit' | 'transaksi' | 'pelanggan' | 'terjual'>('profit');
+  const [chartMetric, setChartMetric] = useState<'profit' | 'transaksi' | 'terjual'>('profit');
+  const [lineChartYears, setLineChartYears] = useState<string[]>([selectedYear]);
+  const [pieChartMetric, setPieChartMetric] = useState<'profit' | 'transaksi' | 'terjual'>('transaksi');
+
+  // Update lineChartYears when global selectedYear changes (optional)
+  useEffect(() => {
+    setLineChartYears([selectedYear]);
+  }, [selectedYear]);
+
+  const handleYearDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    if (val === 'both') {
+      setLineChartYears(['2025', '2026']);
+    } else {
+      setLineChartYears([val]);
+    }
+  };
 
   useEffect(() => {
     // We only care about Jan, Feb, Mar since that's all the data we have.
     const AVAILABLE_MONTHS = ['januari', 'februari', 'maret'];
-    const monthsToFetch = AVAILABLE_MONTHS;
-
-    const selectedYears = selectedYearsParam.split(',').filter(Boolean);
-
-    // Fetch comparison data independently
-    Promise.all([
-      fetch('/output_summary/summary_lama.json').then(res => res.ok ? res.json() : null),
-      fetch('/output_summary/summary_baru.json').then(res => res.ok ? res.json() : null)
-    ]).then(([lama, baru]) => {
-      setComparisonData({ lama, baru });
-    });
 
     const newChartData: { [year: string]: any } = {};
     const fetchPromises: Promise<any>[] = [];
 
-    selectedYears.forEach(year => {
-      const filename = year === '2025' ? 'summary_lama.json' : 'summary_baru.json';
-      const p = fetch(`/output_summary/${filename}`)
+    ['2025', '2026'].forEach(year => {
+      const p = fetch(`/analysis/summary_${year}.json`)
         .then(res => {
           if (!res.ok) return null;
           return res.json();
@@ -213,47 +216,13 @@ function DashboardContent() {
 
     Promise.all(fetchPromises).then(() => {
       setChartData(newChartData);
-
-      // Process summary data from fetchPromises
-      const aggregated = {
-        total_profit: 0,
-        total_transaksi: 0,
-        total_pelanggan: 0,
-        total_terjual: 0,
-      };
-      let hasData = false;
-
-      selectedYears.forEach(year => {
-        const yearData = newChartData[year];
-        if (yearData) {
-          monthsToFetch.forEach(month => {
-            const d = yearData[month];
-            if (d) {
-              hasData = true;
-              aggregated.total_profit += (d.total_profit || 0);
-              aggregated.total_transaksi += (d.total_transaksi || 0);
-              aggregated.total_pelanggan += (d.total_pelanggan || 0);
-              aggregated.total_terjual += (d.data_terjual || 0);
-            }
-          });
-        }
-      });
-
-      if (hasData) {
-        setSummaryData(aggregated);
-      } else {
-        setSummaryData(null);
-      }
-
     });
 
     // Fetch Top 3 Podium Products logic
     let topProductsUrl = '';
-    if (selectedYears.includes('2025') && selectedYears.includes('2026')) {
-      topProductsUrl = '/penjualan_summary/summary_produk_gabungan.json';
-    } else if (selectedYears.includes('2026')) {
+    if (selectedYear === '2026') {
       topProductsUrl = '/penjualan_summary/summary_produk_baru.json';
-    } else if (selectedYears.includes('2025')) {
+    } else {
       topProductsUrl = '/penjualan_summary/summary_produk_lama.json';
     }
 
@@ -265,24 +234,7 @@ function DashboardContent() {
           const months = ['januari', 'februari', 'maret'];
           const top3PerMonth: any = { januari: [], februari: [], maret: [] };
           months.forEach(month => {
-            let combinedData: any[] = [];
-            if (data.lama && data.baru) {
-              const lamaData = data.lama[month] || [];
-              const baruData = data.baru[month] || [];
-              const map: any = {};
-              [...lamaData, ...baruData].forEach(item => {
-                const name = item['Nama Produk'];
-                if (!map[name]) map[name] = { ...item };
-                else {
-                  map[name].total_penjualan += item.total_penjualan;
-                  map[name].jumlah_terjual += item.jumlah_terjual;
-                  map[name].jumlah_pesanan_unik += item.jumlah_pesanan_unik;
-                }
-              });
-              combinedData = Object.values(map);
-            } else {
-              combinedData = data[month] || [];
-            }
+            let combinedData: any[] = data[month] || [];
             combinedData.sort((a, b) => b.total_penjualan - a.total_penjualan);
             top3PerMonth[month] = combinedData.slice(0, 3);
           });
@@ -290,17 +242,27 @@ function DashboardContent() {
         })
         .catch(() => console.error(`Failed to fetch ${topProductsUrl}`));
     }
-  }, [selectedYearsParam]);
+  }, [selectedYear]);
 
-  const totalPendapatan = summaryData ? summaryData.total_profit : 0;
+  const currentYearData = chartData[selectedYear];
+  const summaryData = currentYearData ? currentYearData.total : null;
+  const singleVsMulti = currentYearData ? currentYearData.single_vs_multi : null;
+
+  const totalPendapatan = summaryData ? summaryData.total_pendapatan : 0;
   const totalTransaksi = summaryData ? summaryData.total_transaksi : 0;
-  const totalPelanggan = summaryData ? summaryData.total_pelanggan : 0;
   const totalTerjual = summaryData ? summaryData.total_terjual : 0;
+
+  const sp = singleVsMulti ? singleVsMulti.single_produk : null;
+  const mp = singleVsMulti ? singleVsMulti.multi_produk : null;
+
+  const isSingleDominant = sp && mp ? sp.jumlah_transaksi >= mp.jumlah_transaksi : true;
+  const dominantName = isSingleDominant ? 'Single Item' : 'Multi Item';
+  const dominantPct = isSingleDominant && sp ? sp.persentase : (mp ? mp.persentase : 0);
 
   const AVAILABLE_MONTHS = ['januari', 'februari', 'maret'];
   const MONTH_LABELS = ['Jan', 'Feb', 'Mar'];
 
-  const datasets = Object.keys(chartData).map(year => {
+  const datasets = lineChartYears.map(year => {
     const is2025 = year === '2025';
     const color = is2025 ? '#3b82f6' : '#f59e0b';
     const bgColor = is2025 ? 'rgba(59, 130, 246, 0.1)' : 'rgba(245, 158, 11, 0.1)';
@@ -312,12 +274,11 @@ function DashboardContent() {
       const d = yearData[month];
       if (!d) return null;
       if (chartMetric === 'transaksi') return d.total_transaksi;
-      if (chartMetric === 'pelanggan') return d.total_pelanggan;
-      if (chartMetric === 'terjual') return d.data_terjual;
-      return Number((d.total_profit / 1000).toFixed(2)); // plot what we have, skip what we don't
+      if (chartMetric === 'terjual') return d.total_terjual;
+      return Number((d.total_pendapatan / 1000).toFixed(2));
     });
 
-    const metricLabel = chartMetric === 'transaksi' ? 'Transaksi' : chartMetric === 'pelanggan' ? 'Pelanggan' : chartMetric === 'terjual' ? 'Terjual (Barang)' : 'Pendapatan (Juta Rp)';
+    const metricLabel = chartMetric === 'transaksi' ? 'Transaksi' : chartMetric === 'terjual' ? 'Terjual (Barang)' : 'Pendapatan (Juta Rp)';
 
     return {
       label: `${metricLabel} ${year}`,
@@ -446,261 +407,224 @@ function DashboardContent() {
     }
   };
 
-  // --- Calculate Comparison Data ---
-  let diffPendapatanPct = 0;
-  let diffTransaksiPct = 0;
-  let diffPelangganPct = 0;
-  let diffTerjualPct = 0;
+  const pieDataValues = pieChartMetric === 'profit' 
+    ? [sp ? sp.total_pendapatan / 1000 : 0, mp ? mp.total_pendapatan / 1000 : 0]
+    : pieChartMetric === 'terjual'
+    ? [sp ? sp.total_terjual : 0, mp ? mp.total_terjual : 0]
+    : [sp ? sp.jumlah_transaksi : 0, mp ? mp.jumlah_transaksi : 0];
 
-  let diffPendapatanAbs = 0;
-  let diffTransaksiAbs = 0;
-  let diffPelangganAbs = 0;
-  let diffTerjualAbs = 0;
-
-  if (comparisonData.lama?.summary && comparisonData.baru?.summary) {
-    const l = comparisonData.lama.summary;
-    const b = comparisonData.baru.summary;
-
-    diffPendapatanAbs = b.total_profit - l.total_profit;
-    diffTransaksiAbs = b.total_transaksi - l.total_transaksi;
-    diffPelangganAbs = b.total_pelanggan - l.total_pelanggan;
-    diffTerjualAbs = (b.total_data_terjual || 0) - (l.total_data_terjual || 0);
-
-    diffPendapatanPct = l.total_profit ? (diffPendapatanAbs / l.total_profit) * 100 : 0;
-    diffTransaksiPct = l.total_transaksi ? (diffTransaksiAbs / l.total_transaksi) * 100 : 0;
-    diffPelangganPct = l.total_pelanggan ? (diffPelangganAbs / l.total_pelanggan) * 100 : 0;
-    diffTerjualPct = l.total_data_terjual ? (diffTerjualAbs / l.total_data_terjual) * 100 : 0;
-  }
-
-  const comparisonChartData = {
-    labels: ['Pendapatan', 'Transaksi', 'Customer', 'Terjual'],
+  const pieChartData = {
+    labels: ['Single Item', 'Multi Item'],
     datasets: [
       {
-        label: 'Pertumbuhan (%)',
-        data: [
-          Number(diffPendapatanPct.toFixed(1)),
-          Number(diffTransaksiPct.toFixed(1)),
-          Number(diffPelangganPct.toFixed(1)),
-          Number(diffTerjualPct.toFixed(1))
-        ],
-        absData: [
-          diffPendapatanAbs,
-          diffTransaksiAbs,
-          diffPelangganAbs,
-          diffTerjualAbs
-        ],
+        data: pieDataValues,
         backgroundColor: [
-          diffPendapatanPct >= 0 ? '#f59e0b' : '#ef4444',
-          diffTransaksiPct >= 0 ? '#3b82f6' : '#ef4444',
-          diffPelangganPct >= 0 ? '#ec4899' : '#ef4444',
-          diffTerjualPct >= 0 ? '#10b981' : '#ef4444' // Emerald for Terjual
+          'rgba(59, 130, 246, 0.85)', // Blue
+          'rgba(245, 158, 11, 0.85)'  // Amber
         ],
         hoverBackgroundColor: [
-          diffPendapatanPct >= 0 ? '#d97706' : '#dc2626',
-          diffTransaksiPct >= 0 ? '#2563eb' : '#dc2626',
-          diffPelangganPct >= 0 ? '#db2777' : '#dc2626',
-          diffTerjualPct >= 0 ? '#059669' : '#dc2626'
+          'rgba(37, 99, 235, 1)',
+          'rgba(217, 119, 6, 1)'
         ],
-        borderRadius: 8,
-        borderSkipped: false,
-        barPercentage: 0.7,
+        borderColor: ['#ffffff', '#ffffff'],
+        borderWidth: 3,
+        hoverOffset: 8
       }
     ]
   };
 
-  const comparisonChartOptions: any = {
-    indexAxis: 'y',
+  const pieChartOptions: any = {
     responsive: true,
     maintainAspectRatio: false,
+    cutout: '70%', // makes it a doughnut
     plugins: {
-      legend: { display: false },
+      legend: {
+        position: 'bottom',
+        labels: { boxWidth: 12, padding: 20, usePointStyle: true, font: { family: "'Inter', sans-serif", weight: 'bold' } }
+      },
       tooltip: {
         backgroundColor: 'rgba(17, 24, 39, 0.95)',
-        padding: 16,
-        titleFont: { size: 14, family: "'Inter', sans-serif", weight: 'bold' },
-        bodyFont: { size: 14, family: "'Inter', sans-serif", weight: '500' },
-        displayColors: true,
-        boxPadding: 4,
+        padding: 12,
+        titleFont: { size: 14, family: "'Inter', sans-serif" },
+        bodyFont: { size: 14, family: "'Inter', sans-serif", weight: 'bold' },
+        cornerRadius: 8,
         callbacks: {
           label: function (context: any) {
-            const valPct = context.raw;
-            const ds = context.dataset;
-            const absVal = ds.absData[context.dataIndex];
-
-            let absStr = '';
-            if (context.label === 'Pendapatan') {
-              absStr = `${absVal > 0 ? '+' : ''}${(absVal / 1000).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 1 })} Jt`;
+            const val = context.raw;
+            const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+            const pct = total > 0 ? ((val / total) * 100).toFixed(1) : '0';
+            
+            if (pieChartMetric === 'profit') {
+                 return ` Rp ${val.toLocaleString('id-ID', { maximumFractionDigits: 0 })} Jt (${pct}%)`;
+            } else if (pieChartMetric === 'terjual') {
+                 return ` ${val.toLocaleString('id-ID')} Item (${pct}%)`;
             } else {
-              absStr = `${absVal > 0 ? '+' : ''}${Math.round(absVal)}`;
+                 return ` ${val.toLocaleString('id-ID')} Trx (${pct}%)`;
             }
-
-            return ` ${valPct > 0 ? '+' : ''}${valPct}% (${absStr})`;
           }
         }
-      }
-    },
-    scales: {
-      x: {
-        grid: { color: '#f3f4f6', drawBorder: false },
-        border: { display: false },
-        ticks: {
-          color: '#6b7280', font: { size: 12, family: "'Inter', sans-serif" },
-          callback: function (value: any) { return value + '%'; }
-        }
-      },
-      y: {
-        grid: { display: false },
-        border: { display: false },
-        ticks: { color: '#374151', font: { size: 13, weight: 'bold', family: "'Inter', sans-serif" } }
       }
     }
   };
 
   return (
     <div className="space-y-8 animate-fade-in-up">
-      <div>
-        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Overview</h1>
-        <p className="text-gray-500 mt-1">
-          Ringkasan performa penjualan untuk kuartal 1 tahun {selectedYearsParam.split(',').join(', ')}.
-        </p>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Overview</h1>
+          <p className="text-gray-500 mt-1">
+            Ringkasan performa penjualan untuk kuartal 1 tahun {selectedYear}.
+          </p>
+        </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Total Pendapatan */}
-        <div className="relative overflow-hidden p-6 rounded-3xl bg-white shadow-lg border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+        <div className="relative overflow-hidden p-5 rounded-3xl bg-white shadow-md border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-amber-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div className="relative z-10 flex flex-col h-full justify-between">
-            <div className="flex justify-between items-start mb-4">
+            <div className="flex justify-between items-start mb-3">
               <div>
-                <h3 className="text-gray-500 text-xs font-bold tracking-wider uppercase mb-1">Total Pendapatan</h3>
-                <p className="text-gray-400 text-[10px]">Akumulasi Kuartal 1</p>
+                <h3 className="text-gray-500 text-[11px] font-bold tracking-wider uppercase mb-0.5">Total Pendapatan</h3>
+                <p className="text-gray-400 text-[9px]">Keseluruhan</p>
               </div>
-              <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
             </div>
             <div>
-              <div className="flex items-end gap-2 mb-2">
-                <p className="text-3xl font-black text-gray-900 mb-1">
-                  <span className="text-lg text-gray-400 mr-1">Rp</span>
+              <div className="flex items-end gap-1 mb-2">
+                <p className="text-2xl font-black text-gray-900 mb-0 leading-none">
+                  <span className="text-sm text-gray-400 mr-1">Rp</span>
                   {(totalPendapatan / 1000).toLocaleString('id-ID', { maximumFractionDigits: 0 })}
-                  <span className="text-lg text-gray-400 ml-1">Jt</span>
+                  <span className="text-xs text-gray-400 ml-1.5">Jt</span>
                 </p>
               </div>
-              <div className="flex items-center gap-2 mt-2">
-                <div className="text-xs text-amber-600 font-medium flex items-center gap-1">
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                  Kinerja Stabil
+              <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-gray-50 text-[10px] sm:text-[11px] font-medium">
+                <div className="flex justify-between items-center text-gray-500">
+                  <span>Single:</span>
+                  <span className="text-gray-700">Rp {(sp ? sp.total_pendapatan / 1000 : 0).toLocaleString('id-ID', { maximumFractionDigits: 0 })} Jt</span>
                 </div>
-                <span className="text-gray-400 text-[10px] font-medium ml-1 border-l border-gray-200 pl-2">Bulan Jan-Mar</span>
+                <div className="flex justify-between items-center text-gray-500">
+                  <span>Multi:</span>
+                  <span className="text-gray-700">Rp {(mp ? mp.total_pendapatan / 1000 : 0).toLocaleString('id-ID', { maximumFractionDigits: 0 })} Jt</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Card 2: Total Transaksi */}
-        <div className="relative overflow-hidden p-6 rounded-3xl bg-white shadow-lg border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+        <div className="relative overflow-hidden p-5 rounded-3xl bg-white shadow-md border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
           <div className="relative z-10 flex flex-col h-full justify-between">
-            <div className="flex justify-between items-start mb-4">
+            <div className="flex justify-between items-start mb-3">
               <div>
-                <h3 className="text-gray-500 text-xs font-bold tracking-wider uppercase mb-1">Total Transaksi</h3>
-                <p className="text-gray-400 text-[10px]">Akumulasi Kuartal 1</p>
+                <h3 className="text-gray-500 text-[11px] font-bold tracking-wider uppercase mb-0.5">Total Transaksi</h3>
+                <p className="text-gray-400 text-[9px]">Keseluruhan</p>
               </div>
-              <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
               </div>
             </div>
             <div>
-              <div className="flex items-end gap-2 mb-2">
-                <p className="text-3xl font-black text-gray-900 mb-1">
+              <div className="flex items-end gap-1 mb-2">
+                <p className="text-2xl font-black text-gray-900 mb-0 leading-none">
                   {totalTransaksi.toLocaleString('id-ID')}
-                  <span className="text-base text-gray-400 font-medium ml-1">Trx</span>
+                  <span className="text-xs text-gray-400 font-semibold ml-1.5">Trx</span>
                 </p>
               </div>
-              <div className="flex items-center gap-2 mt-2">
-                <div className="text-xs text-blue-600 font-medium flex items-center gap-1">
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                  Kinerja Stabil
+              <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-gray-50 text-[10px] sm:text-[11px] font-medium">
+                <div className="flex justify-between items-center text-gray-500">
+                  <span>Single:</span>
+                  <span className="text-gray-700">{(sp ? sp.jumlah_transaksi : 0).toLocaleString('id-ID')} Trx</span>
                 </div>
-                <span className="text-gray-400 text-[10px] font-medium ml-1 border-l border-gray-200 pl-2">Bulan Jan-Mar</span>
+                <div className="flex justify-between items-center text-gray-500">
+                  <span>Multi:</span>
+                  <span className="text-gray-700">{(mp ? mp.jumlah_transaksi : 0).toLocaleString('id-ID')} Trx</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Card 3: Total Customer */}
-        <div className="relative overflow-hidden p-6 rounded-3xl bg-gradient-to-br from-rose-400 to-pink-500 text-white shadow-lg shadow-rose-500/20 border border-white/30 hover:shadow-xl hover:shadow-rose-500/30 hover:-translate-y-1 transition-all duration-500 group">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-black/10 pointer-events-none"></div>
-          <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/40 rounded-full blur-2xl pointer-events-none group-hover:scale-150 transition-transform duration-700"></div>
+        {/* Card 3: Penjualan Terbanyak */}
+        <div className="relative overflow-hidden p-5 rounded-3xl bg-gradient-to-br from-rose-400 to-pink-500 text-white shadow-md shadow-rose-500/20 border border-rose-300 hover:shadow-lg hover:shadow-rose-500/30 hover:-translate-y-1 transition-all duration-500 group flex flex-col justify-between">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-black/10 pointer-events-none"></div>
+          <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/30 rounded-full blur-2xl pointer-events-none group-hover:scale-150 transition-transform duration-700"></div>
 
           <div className="relative z-10 flex flex-col h-full justify-between">
-            <div className="flex justify-between items-start mb-4">
+            <div className="flex justify-between items-start mb-3">
               <div>
-                <h3 className="text-white/90 text-sm font-semibold tracking-wide uppercase drop-shadow-sm mb-0.5">Total Customer</h3>
-                <p className="text-white/70 text-xs">Akumulasi Kuartal 1</p>
+                <h3 className="text-white/95 text-[11px] font-bold tracking-wider uppercase drop-shadow-sm mb-0.5">Penjualan Terbanyak</h3>
+                <p className="text-white/70 text-[9px]">Kategori Item</p>
               </div>
-              <div className="p-2.5 bg-white/20 text-white rounded-xl shadow-sm backdrop-blur-md border border-white/40">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              <div className="p-2 bg-white/20 text-white rounded-xl shadow-sm backdrop-blur-md">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                 </svg>
               </div>
             </div>
 
             <div>
-              <div className="flex items-end gap-2 mb-2">
-                <p className="text-4xl font-black text-white leading-none tracking-tight drop-shadow-md">
-                  {totalPelanggan.toLocaleString('id-ID')}
-                  <span className="text-xl opacity-80 ml-1.5">Orang</span>
+              <div className="flex items-end gap-1 mb-2">
+                <p className="text-2xl font-black text-white leading-none tracking-tight drop-shadow-md pb-0.5">
+                  {dominantName}
                 </p>
               </div>
-              <div className="flex items-center gap-2 mt-3">
-                <span className="inline-flex items-center gap-1 text-rose-100 bg-rose-500/40 px-2.5 py-1 rounded-full text-[11px] font-bold border border-rose-400/30 backdrop-blur-md shadow-sm">
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                  Kinerja Stabil
-                </span>
-                <span className="text-white/80 text-xs font-medium">Bulan Jan-Mar</span>
+              <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-white/20 text-[10px] sm:text-[11px] font-medium text-rose-50 w-full">
+                <div className="flex justify-between items-center rounded-lg backdrop-blur-sm">
+                  <span className="text-white/80">Single:</span>
+                  <span className="font-bold">{sp ? sp.persentase : 0}%</span>
+                </div>
+                <div className="flex justify-between items-center rounded-lg backdrop-blur-sm">
+                  <span className="text-white/80">Multi:</span>
+                  <span className="font-bold">{mp ? mp.persentase : 0}%</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Card 4: Total Terjual */}
-        <div className="relative overflow-hidden p-6 rounded-3xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-lg shadow-emerald-500/20 border border-white/30 hover:shadow-xl hover:shadow-emerald-500/30 hover:-translate-y-1 transition-all duration-500 group">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-black/10 pointer-events-none"></div>
-          <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/40 rounded-full blur-2xl pointer-events-none group-hover:scale-150 transition-transform duration-700"></div>
+        <div className="relative overflow-hidden p-5 rounded-3xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-md shadow-emerald-500/20 border border-emerald-300 hover:shadow-lg hover:shadow-emerald-500/30 hover:-translate-y-1 transition-all duration-500 group flex flex-col justify-between">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-black/10 pointer-events-none"></div>
+          <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/30 rounded-full blur-2xl pointer-events-none group-hover:scale-150 transition-transform duration-700"></div>
 
           <div className="relative z-10 flex flex-col h-full justify-between">
-            <div className="flex justify-between items-start mb-4">
+            <div className="flex justify-between items-start mb-3">
               <div>
-                <h3 className="text-white/90 text-sm font-semibold tracking-wide uppercase drop-shadow-sm mb-0.5">Total Terjual</h3>
-                <p className="text-white/70 text-xs">Akumulasi Kuartal 1</p>
+                <h3 className="text-white/95 text-[11px] font-bold tracking-wider uppercase drop-shadow-sm mb-0.5">Total Terjual</h3>
+                <p className="text-white/70 text-[9px]">Keseluruhan</p>
               </div>
-              <div className="p-2.5 bg-white/20 text-white rounded-xl shadow-sm backdrop-blur-md border border-white/40">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="p-2 bg-white/20 text-white rounded-xl shadow-sm backdrop-blur-md">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
               </div>
             </div>
 
             <div>
-              <div className="flex items-end gap-2 mb-2">
-                <p className="text-4xl font-black text-white leading-none tracking-tight drop-shadow-md">
+              <div className="flex items-end gap-1 mb-2">
+                <p className="text-2xl font-black text-white leading-none tracking-tight drop-shadow-md pb-0.5">
                   {totalTerjual.toLocaleString('id-ID')}
-                  <span className="text-xl opacity-80 ml-1.5">Barang</span>
+                  <span className="text-xs opacity-80 ml-1.5 font-semibold">Item</span>
                 </p>
               </div>
-              <div className="flex items-center gap-2 mt-3">
-                <span className="inline-flex items-center gap-1 text-emerald-100 bg-emerald-500/40 px-2.5 py-1 rounded-full text-[11px] font-bold border border-emerald-400/30 backdrop-blur-md shadow-sm">
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                  Kinerja Stabil
-                </span>
-                <span className="text-white/80 text-xs font-medium">Bulan Jan-Mar</span>
+              <div className="flex flex-col gap-1 mt-3 pt-3 border-t border-white/20 text-[10px] sm:text-[11px] font-medium text-emerald-50 w-full">
+                <div className="flex justify-between items-center rounded-lg backdrop-blur-sm">
+                  <span className="text-white/80">Single:</span>
+                  <span className="font-bold">{(sp ? sp.total_terjual : 0).toLocaleString('id-ID')}</span>
+                </div>
+                <div className="flex justify-between items-center rounded-lg backdrop-blur-sm">
+                  <span className="text-white/80">Multi:</span>
+                  <span className="font-bold">{(mp ? mp.total_terjual : 0).toLocaleString('id-ID')}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -710,35 +634,30 @@ function DashboardContent() {
       {/* Main Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-gray-100 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.1)] transition-shadow duration-300">
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 lg:mb-8 gap-4">
             <h2 className="text-xl font-bold text-gray-800 tracking-tight">
-              {chartMetric === 'transaksi' ? 'Tren Transaksi' : chartMetric === 'pelanggan' ? 'Tren Pelanggan' : 'Tren Pendapatan'}
+              {chartMetric === 'transaksi' ? 'Tren Transaksi' : chartMetric === 'terjual' ? 'Tren Terjual' : 'Tren Pendapatan'}
             </h2>
-            <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-lg border border-gray-100">
-              <button
-                onClick={() => setChartMetric('profit')}
-                className={`text-xs font-medium px-2 py-1.5 rounded-md transition-colors ${chartMetric === 'profit' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            <div className="flex items-center gap-2">
+              <select
+                value={lineChartYears.length === 2 ? 'both' : lineChartYears[0]}
+                onChange={handleYearDropdownChange}
+                className="text-xs font-semibold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-sm"
               >
-                Pendapatan
-              </button>
-              <button
-                onClick={() => setChartMetric('transaksi')}
-                className={`text-xs font-medium px-2 py-1.5 rounded-md transition-colors ${chartMetric === 'transaksi' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                <option value="2026">Tahun 2026</option>
+                <option value="2025">Tahun 2025</option>
+                <option value="both">Bandingkan 25 & 26</option>
+              </select>
+
+              <select
+                value={chartMetric}
+                onChange={(e) => setChartMetric(e.target.value as 'profit' | 'transaksi' | 'terjual')}
+                className="text-xs font-semibold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-sm"
               >
-                Transaksi
-              </button>
-              <button
-                onClick={() => setChartMetric('pelanggan')}
-                className={`text-xs font-medium px-2 py-1.5 rounded-md transition-colors ${chartMetric === 'pelanggan' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                Customer
-              </button>
-              <button
-                onClick={() => setChartMetric('terjual')}
-                className={`text-xs font-medium px-2 py-1.5 rounded-md transition-colors ${chartMetric === 'terjual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                Terjual
-              </button>
+                <option value="profit">Pendapatan</option>
+                <option value="transaksi">Transaksi</option>
+                <option value="terjual">Terjual</option>
+              </select>
             </div>
           </div>
           <div className="h-72 w-full mt-2">
@@ -747,12 +666,37 @@ function DashboardContent() {
         </div>
 
         <div className="bg-white p-6 rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-gray-100 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.1)] transition-shadow duration-300">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-xl font-bold text-gray-800 tracking-tight">Pertumbuhan 2026 vs 2025</h2>
-            <span className="text-xs font-bold text-amber-700 bg-gradient-to-r from-amber-100 to-orange-100 px-3 py-1.5 rounded-lg border border-amber-200/50 shadow-sm">Keseluruhan</span>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 lg:mb-8 gap-4">
+            <h2 className="text-xl font-bold text-gray-800 tracking-tight">
+              {pieChartMetric === 'transaksi' ? 'Persentase Transaksi' : pieChartMetric === 'terjual' ? 'Persentase Terjual' : 'Persentase Pendapatan'}
+            </h2>
+            <div className="flex items-center gap-2">
+              <select
+                value={pieChartMetric}
+                onChange={(e) => setPieChartMetric(e.target.value as 'profit' | 'transaksi' | 'terjual')}
+                className="text-xs font-semibold text-gray-700 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-sm"
+              >
+                <option value="profit">Pendapatan</option>
+                <option value="transaksi">Transaksi</option>
+                <option value="terjual">Terjual</option>
+              </select>
+            </div>
           </div>
-          <div className="h-72 w-full mt-2">
-            <Bar options={comparisonChartOptions} data={comparisonChartData} />
+          <div className="h-72 w-full mt-2 relative flex justify-center items-center">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none flex-col mt-[-20px]">
+              <span className="text-3xl font-black text-gray-800">
+                {pieChartMetric === 'profit' 
+                  ? `Rp ${(totalPendapatan / 1000).toLocaleString('id-ID', { maximumFractionDigits: 0 })}` 
+                  : pieChartMetric === 'terjual'
+                  ? totalTerjual.toLocaleString('id-ID')
+                  : totalTransaksi.toLocaleString('id-ID')}
+                {pieChartMetric === 'profit' && <span className="text-xl ml-1 text-gray-600">Jt</span>}
+              </span>
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest mt-1">
+                {pieChartMetric === 'profit' ? 'Total Pendapatan' : pieChartMetric === 'terjual' ? 'Total Terjual' : 'Total Trx'}
+              </span>
+            </div>
+            <Doughnut options={pieChartOptions} data={pieChartData} />
           </div>
         </div>
 

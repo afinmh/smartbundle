@@ -1,0 +1,42 @@
+{
+    "januari": {
+        "total_pendapatan": 234728.457,
+        "total_transaksi": 1717,
+        "total_customer": 1514,
+        "total_terjual": 7116
+    },
+    "februari": {
+        "total_pendapatan": 461908.0566,
+        "total_transaksi": 3789,
+        "total_customer": 3397,
+        "total_terjual": 13122
+    },
+    "maret": {
+        "total_pendapatan": 116860.0424,
+        "total_transaksi": 892,
+        "total_customer": 824,
+        "total_terjual": 3349
+    },
+    "total": {
+        "total_pendapatan": 813496.556,
+        "total_transaksi": 6398,
+        "total_customer": 5632,
+        "total_terjual": 23587
+    },
+    "single_vs_multi": {
+        "single_produk": {
+            "jumlah_transaksi": 4983,
+            "persentase": 77.88,
+            "total_pendapatan": 468453.557,
+            "total_transaksi": 4983,
+            "total_terjual": 13683
+        },
+        "multi_produk": {
+            "jumlah_transaksi": 1415,
+            "persentase": 22.12,
+            "total_pendapatan": 345042.999,
+            "total_transaksi": 1415,
+            "total_terjual": 9904
+        }
+    }
+}
